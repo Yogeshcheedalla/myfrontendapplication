@@ -1,0 +1,322 @@
+.teacher-dashboard-bg {
+  background: #e9ecff;
+  min-height: 100vh;
+  font-family: 'Inter', Arial, sans-serif;
+  color: #1e1e2d;
+}
+
+/* ===== NAVBAR ===== */
+.teacher-navbar {
+  padding: 1.2em 2.4em;
+  background: linear-gradient(90deg, #6370f5, #7286ff);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #fff;
+  box-shadow: 0 4px 12px #0003;
+}
+.teacher-logo {
+  font-weight: 700;
+  font-size: 1.5em;
+  letter-spacing: 0.5px;
+}
+.teacher-logout-btn {
+  background: #ff4c4c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6em 1.4em;
+  font-size: 1.05em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.teacher-logout-btn:hover {
+  background: #d63a3a;
+}
+
+/* ===== LAYOUT ===== */
+.teacher-layout {
+  display: flex;
+  align-items: flex-start;
+}
+.teacher-sidebar {
+  min-width: 220px;
+  background: #fff;
+  padding: 2.2em 1em;
+  border-right: 2px solid #dee2ff;
+  box-shadow: 2px 0 8px #cdd1ff66;
+}
+.sidebar-item {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1.2em;
+  cursor: pointer;
+  padding: 0.5em 0.8em;
+  border-radius: 8px;
+  transition: 0.2s;
+}
+.sidebar-item:hover {
+  background: #f1f3ff;
+  color: #4a5fd6;
+}
+.sidebar-item.active {
+  background: #d9ddff;
+  color: #3440a8;
+}
+.sidebar-subitem {
+  color: #4a5fd6;
+  margin-left: 1.4em;
+  font-weight: 500;
+  font-size: 1.05em;
+  margin-bottom: 1em;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.sidebar-subitem:hover {
+  background: #edf0ff;
+  border-radius: 6px;
+  padding-left: 0.4em;
+}
+
+/* ===== MAIN ===== */
+.teacher-main {
+  width: 100%;
+  padding: 2.5em 3em;
+  background: #f8f9ff;
+}
+.teacher-welcome-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2em;
+}
+.teacher-welcome-desc {
+  color: #444;
+  font-size: 1.05em;
+  margin-top: 0.3em;
+}
+.teacher-create-btn {
+  background: #6370f5;
+  color: #fff;
+  border: none;
+  padding: 0.75em 1.5em;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  box-shadow: 0 2px 8px #6370f544;
+}
+.teacher-create-btn:hover {
+  background: #4e5be0;
+}
+
+/* ===== OVERVIEW ===== */
+.teacher-overview-row {
+  display: flex;
+  gap: 2em;
+  margin-bottom: 1.8em;
+}
+.teacher-overview-card {
+  background: #fff;
+  box-shadow: 0 2px 12px #0001;
+  border-radius: 14px;
+  padding: 1.4em 2.3em;
+  text-align: left;
+  flex: 1;
+  transition: transform 0.2s ease, box-shadow 0.2s;
+}
+.teacher-overview-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 14px #0002;
+}
+.teacher-ov-number {
+  font-size: 2.3em;
+  font-weight: 700;
+  color: #2d2d4f;
+}
+.teacher-ov-green {
+  color: #27ae60;
+  font-size: 1.02em;
+}
+.teacher-ov-red {
+  color: #eb5757;
+  font-size: 1.02em;
+}
+
+/* ===== ACTIVITY ===== */
+.teacher-activity {
+  margin-bottom: 2.5em;
+}
+.teacher-activity-item {
+  display: flex;
+  align-items: center;
+  gap: 1.1em;
+  padding: 0.9em 0;
+  border-bottom: 1px solid #e0e0f0;
+  font-size: 1.1em;
+}
+.teacher-activity-icon {
+  font-size: 1.5em;
+  color: #6370f5;
+}
+.teacher-activity-time {
+  margin-left: auto;
+  font-size: 0.95em;
+  color: #777;
+}
+
+/* ===== TABLE ===== */
+.teacher-search {
+  border-radius: 7px;
+  border: 1.8px solid #b4b9ff;
+  padding: 0.7em 1em;
+  margin-bottom: 1.2em;
+  width: 50%;
+  font-size: 1.08em;
+  outline: none;
+  background: #fdfdff;
+  box-shadow: 0 0 6px #e4e6ff;
+}
+.teacher-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px #0001;
+}
+.teacher-table th, .teacher-table td {
+  padding: 1em 1.2em;
+  border-bottom: 1px solid #ececec;
+  text-align: left;
+}
+.teacher-table th {
+  font-size: 1.1em;
+  color: #222;
+  font-weight: 700;
+  background: #edf0ff;
+}
+.teacher-table tr:hover td {
+  background: #f8f9ff;
+}
+
+/* ===== STATUS BADGES ===== */
+.assignment-status {
+  padding: 0.4em 1.1em;
+  border-radius: 12px;
+  font-size: 0.97em;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+.assignment-status.active {
+  background: #e1f9e8;
+  color: #1f9d47;
+}
+.assignment-status.pending {
+  background: #fff4d6;
+  color: #d49b20;
+}
+.assignment-status.completed {
+  background: #dee2ff;
+  color: #4e5be0;
+}
+
+/* ===== BUTTONS & PAGINATION ===== */
+.teacher-view-btn {
+  background: #f5f6ff;
+  color: #4e5be0;
+  border: 1.5px solid #c4c8ff;
+  padding: 0.4em 1.2em;
+  border-radius: 8px;
+  font-size: 1.03em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.teacher-view-btn:hover {
+  background: #e1e4ff;
+}
+.teacher-pagination-btn {
+  background: #fff;
+  color: #666;
+  border: 1px solid #ccc;
+  border-radius: 7px;
+  padding: 0.4em 1.5em;
+  font-size: 1.04em;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.teacher-pagination-btn:hover {
+  background: #edf0ff;
+  color: #4e5be0;
+}
+
+/* ===== MODAL ===== */
+.teacher-modal-bg {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: #000a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+.teacher-modal {
+  background: #fff;
+  box-shadow: 0 8px 42px #0003;
+  border-radius: 18px;
+  padding: 2.4em 3em;
+  max-width: 420px;
+  width: 95%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.teacher-modal label {
+  margin-top: 0.8em;
+  font-weight: 600;
+  color: #2c2c3d;
+}
+.teacher-modal input {
+  padding: 0.6em 0.9em;
+  border-radius: 7px;
+  border: 1.4px solid #ccc;
+  font-size: 1em;
+  margin-bottom: 0.9em;
+  background: #f8f9ff;
+  outline: none;
+}
+.teacher-modal input:focus {
+  border-color: #6370f5;
+  box-shadow: 0 0 4px #6370f533;
+}
+.teacher-modal-actions {
+  display: flex;
+  gap: 1.2em;
+  margin-top: 1.2em;
+  justify-content: flex-end;
+}
+.teacher-modal-actions button {
+  background: #6370f5;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 0.6em 1.4em;
+  font-size: 1.03em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.teacher-modal-actions button:hover {
+  background: #4e5be0;
+}
+.teacher-modal-actions button[type="button"] {
+  background: #ddd;
+  color: #222;
+}
+.teacher-modal-actions button[type="button"]:hover {
+  background: #ccc;
+}

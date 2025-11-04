@@ -24,10 +24,19 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  /* allow content to flow naturally so components can span full width */
   min-width: 320px;
   min-height: 100vh;
+}
+
+/* Ensure form text is readable regardless of global color-scheme settings */
+input, textarea, select, button {
+  color: #213547;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #888888;
+  opacity: 1; /* keep placeholder visible */
 }
 
 h1 {

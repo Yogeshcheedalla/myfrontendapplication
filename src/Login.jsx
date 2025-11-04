@@ -1,46 +1,100 @@
+// Login.jsx
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import "./App.css";
-const Login = () => {
+import { useNavigate } from "react-router-dom";
+import "./login.css"; // (see CSS below)
+
+function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const handleLogin = async (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
     try {
       const res = await fetch("http://localhost:5000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password })
       });
       const data = await res.json();
       if (res.ok) {
-        alert("Login successful ✅");
-        localStorage.setItem("userId", data.user._id);
-        localStorage.setItem("role", data.user.role);
-        if (data.user.role === "teacher") navigate("/teacher");
-        else if (data.user.role === "student") navigate("/student");
-        else navigate("/faculty-dashboard");
+        if (data.token) localStorage.setItem("token", data.token);
+        if (data.user) {
+          localStorage.setItem("role", data.user.role);
+          localStorage.setItem("userId", data.user._id || data.user.id || "");
+        }
+        const userRole = data.user && data.user.role;
+        if (userRole === "teacher") navigate("/teacher");
+        else navigate("/student");
       } else {
-        alert(data.message || "Login failed ❌");
+        setError(data.message || "Login failed");
       }
     } catch (err) {
-      console.error(err);
-      alert("Server error ❌");
+      console.error("Login error:", err);
+      setError("Network error");
     }
+    setLoading(false);
   };
+
   return (
-    <div className="full-page">
-      <h1 className="title">Login</h1>
-      <form className="form-container" onSubmit={handleLogin}>
-        <input className="form-input" type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
-        <input className="form-input" type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
-        <button className="form-btn" type="submit">Login</button>
+    <div className="login-bg">
+      <form className="login-card" onSubmit={handleSubmit}>
+        <div className="login-logo"> <span style={{color:"#6a7dd6"}}>PeerReview</span></div>
+        <h2 className="login-title">Welcome Back</h2>
+        <p className="login-desc">Please log in to your account.</p>
+
+        <label>Email</label>
+        <input
+          type="email"
+          placeholder="m@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+
+        <label>Password</label>
+        <input
+          type="password"
+          placeholder="********"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+
+        {/* Login role selection - commented out
+        <div className="login-role-row">
+          <span>Log in as:</span>
+          <label>
+            <input
+              type="radio"
+              value="student"
+              checked={role === "student"}
+              onChange={() => setRole("student")}
+            />
+            Student
+          </label>
+          <label>
+            <input
+              type="radio"
+              value="teacher"
+              checked={role === "teacher"}
+              onChange={() => setRole("teacher")}
+            />
+            Teacher
+          </label>
+        </div>
+        */}
+
+        <button className="login-btn" type="submit" disabled={loading}>{loading ? "Logging in..." : "Log In"}</button>
+        <button className="signup-btn" type="button" onClick={() => navigate('/signup')}>Sign Up</button>
+        {error && <p className="error">{error}</p>}
       </form>
-      <p className="toggle-link">
-        Don't have an account? <Link to="/signup" style={{ color: "white" }}>Signup</Link>
-      </p>
     </div>
   );
-};
+}
+
 export default Login;

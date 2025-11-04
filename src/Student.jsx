@@ -1,120 +1,255 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./App.css";
+import "./student.css";
 
-const Student = () => {
-const [assignments, setAssignments] = useState([]);
-const [submissions, setSubmissions] = useState([]);
-const [fileUrl, setFileUrl] = useState("");
-const [commentText, setCommentText] = useState({});
-const [selectedAssignment, setSelectedAssignment] = useState(null);
+const DASHBOARD_STATS = [
+{ label: "Pending Reviews", value: 3, desc: "Assignments awaiting your feedback" },
+{ label: "Completed Assignments", value: 12, desc: "Assignments you’ve submitted" },
+{ label: "Overall Grade", value: "A-", desc: "Your current academic standing" },
+{ label: "Awards & Badges", value: 5, desc: "Recognitions for your efforts" }
+];
 
-const studentId = localStorage.getItem("userId");
+const RECENT_ACTIVITY = [
+{ icon: "💬", label: "Feedback received", desc: 'Review comments for "Essay 1: Narrative Writing"', time: "2 hours ago" },
+{ icon: "🔔", label: "Assignment Due", desc: '"Research Project" deadline is tomorrow', time: "5 hours ago" },
+{ icon: "📝", label: "Review Assigned", desc: 'Peer review for "Short Story Analysis"', time: "1 day ago" },
+{ icon: "🧑‍💻", label: "Profile Update", desc: "Your profile information has been updated", time: "2 days ago" }
+];
+
+// Assignments will be fetched from backend
+
+const DEADLINES = [
+{ label: "Essay 2 Submission", date: "May 25, 2024", type: "due" },
+{ label: "Peer Review Cycle 3 Closes", date: "May 30, 2024", type: "peer" },
+{ label: "Research Proposal Draft", date: "June 5, 2024", type: "info" }
+];
+
+function Student() {
 const navigate = useNavigate();
+const [assignments, setAssignments] = useState([]);
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState(null);
 
-// Fetch assignments on load
-useEffect(() => {
-if (!studentId) {
-navigate("/login");
-return;
-}
-fetch(`http://localhost:5173/assignments?studentId=${studentId}`)
-.then(res => res.json())
-.then(data => setAssignments(data))
-.catch(err => {
-console.error("Error fetching assignments:", err);
-setAssignments([]);
-});
-}, [studentId, navigate]);
-
-const handleSubmitAssignment = async (assignmentId) => {
-const res = await fetch("http://localhost:5000/submissions", {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({ assignmentId, studentId, fileUrl })
-});
-const data = await res.json();
-alert(data.message);
-setFileUrl("");
-};
-
-const handleViewSubmissions = async (assignmentId) => {
-setSelectedAssignment(assignmentId);
+// Fetch assignments when component mounts
+React.useEffect(() => {
+const fetchAssignments = async () => {
 try {
-const res = await fetch(`http://localhost:5000/submissions/${assignmentId}`);
-const data = await res.json();
-if (res.ok) {
-setSubmissions(data);
-} else {
-alert(data.message);
-}
-} catch (err) {
-console.error("Error fetching submissions:", err);
-}
-};
+const token = localStorage.getItem('token');
+const userId = localStorage.getItem('userId');
 
-const handleAddComment = async (submissionId) => {
-const res = await fetch("http://localhost:5000/comments", {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({
-submissionId,
-studentId,
-text: commentText[submissionId] || ""
-})
+const response = await fetch(`http://localhost:5000/student/assignments/${userId}`, {
+headers: {
+'Authorization': `Bearer ${token}`
+}
 });
-const data = await res.json();
-alert(data.message);
 
-// Clear only the comment for this submission
-setCommentText(prev => ({ ...prev, [submissionId]: "" }));
+if (!response.ok) {
+throw new Error('Failed to fetch assignments');
+}
+
+const data = await response.json();
+setAssignments(data);
+} catch (err) {
+setError(err.message);
+console.error('Error fetching assignments:', err);
+} finally {
+setLoading(false);
+}
 };
+
+fetchAssignments();
+}, []); // Empty dependency array means this runs once on mount
+
+function handleQuickAction(action) {
+alert("Action: " + action);
+}
+
+async function handleAssignmentClick(assignment) {
+if (assignment.status === "Review") {
+// Navigate to review page
+navigate(`/review/${assignment._id}`);
+} else if (assignment.status === "Pending") {
+// Navigate to submission page
+navigate(`/submit/${assignment._id}`);
+} else {
+// View submitted assignment
+navigate(`/assignment/${assignment._id}`);
+}
+}
+
+function handleLogout() {
+// Clear authentication data
+localStorage.removeItem('token');
+localStorage.removeItem('role');
+localStorage.removeItem('userId');
+// Redirect to login page
+navigate('/');
+}
 
 return (
-<div className="container">
-<h1 className="title">🎓 Student Dashboard</h1>
-<p style={{ color: "green", fontWeight: "bold" }}>Student dashboard loaded!</p>
+<div className="student-dashboard-bg">
+{/* Navbar */}
+<header className="student-navbar">
+<div className="student-logo">✴️ <span style={{ color: "#6a7dd6" }}>PeerReview</span></div>
+<button className="student-logout-btn" onClick={handleLogout}>Logout</button>
+</header>
 
-<h2 className="subtitle">Assignments</h2>
-<ul className="list">
-{assignments.map(a => (
-<li key={a._id} className="list-item">
-<b>{a.title}</b> - {a.description} <br />
-<small>Deadline: {new Date(a.deadline).toLocaleDateString()}</small>
-<div className="actions">
-<input
-className="input"
-placeholder="File URL"
-value={fileUrl}
-onChange={e => setFileUrl(e.target.value)}
-/>
-<button className="btn" onClick={() => handleSubmitAssignment(a._id)}>Submit</button>
-<button className="btn secondary" onClick={() => handleViewSubmissions(a._id)}>View Submissions</button>
+<div className="student-layout">
+{/* Sidebar */}
+<nav className="student-sidebar">
+<div className="sidebar-item active">Student Dashboard</div>
+<div className="sidebar-item">My Assignments</div>
+<div className="sidebar-subitem">Pending Reviews</div>
+<div className="sidebar-subitem">Completed Reviews</div>
+<div className="sidebar-item">Grades</div>
+<div className="sidebar-item">Settings</div>
+</nav>
+
+{/* Main Page */}
+<div className="student-main">
+<div className="student-row">
+{/* Top Stats */}
+{DASHBOARD_STATS.map((stat, i) => (
+<div key={i} className="student-stat-card">
+<div className="student-stat-label">{stat.label}</div>
+<div className="student-stat-value">{stat.value}</div>
+<div className="student-stat-desc">{stat.desc}</div>
 </div>
+))}
+</div>
+
+{/* Lower Grid */}
+<div className="student-lower-row">
+{/* Left: Recent Activity & Deadlines */}
+<div className="student-lower-left">
+<div className="student-card">
+<div className="student-card-title">Assignments & Activities</div>
+{loading ? (
+<div className="loading-message">Loading assignments...</div>
+) : error ? (
+<div className="error-message">{error}</div>
+) : assignments.length === 0 ? (
+<div className="no-assignments">No assignments available</div>
+) : (
+<ul className="student-activity-list">
+{assignments.map((assignment) => (
+<li
+key={assignment._id}
+className="student-activity-row"
+onClick={() => handleAssignmentClick(assignment)}
+style={{ cursor: 'pointer' }}
+>
+<span style={{fontSize:'1.4em'}}>
+{assignment.status === 'Pending' ? '📝' :
+assignment.status === 'Review' ? '👥' : '✅'}
+</span>
+<span>
+<b>{assignment.title}</b>
+<span className="student-activity-desc">
+{assignment.course}
+</span>
+</span>
+<span className="student-activity-time">
+Due: {new Date(assignment.due).toLocaleDateString()}
+</span>
 </li>
 ))}
 </ul>
-
-{selectedAssignment && (
-<div className="submissions">
-<h2 className="subtitle">Submissions</h2>
-{submissions.map(s => (
-<div key={s._id} className="card">
-<p><b>{s.student.name}</b>: <a href={s.fileUrl} target="_blank" rel="noreferrer">View File</a></p>
-<p>Grade: {s.grade || "Not Graded Yet"}</p>
-<input
-className="input"
-placeholder="Add comment"
-value={commentText[s._id] || ""}
-onChange={e => setCommentText(prev => ({ ...prev, [s._id]: e.target.value }))}
-/>
-<button className="btn" onClick={() => handleAddComment(s._id)}>Comment</button>
-</div>
-))}
-</div>
 )}
 </div>
+<div className="student-card student-deadlines">
+<div className="student-card-title">Upcoming Deadlines</div>
+<ul className="student-deadline-list">
+{DEADLINES.map((d, idx) => (
+<li
+key={idx}
+className={
+d.type === "due"
+? "deadline-due"
+: d.type === "peer"
+? "deadline-peer"
+: "deadline-info"
+}
+>
+<div>{d.label}</div>
+<div>{d.date}</div>
+</li>
+))}
+</ul>
+</div>
+</div>
+
+{/* Right: Assignments & Quick Actions */}
+<div className="student-lower-right">
+<div className="student-card student-assignments">
+<div className="student-card-title">My Assignments</div>
+<ul className="student-assignment-list">
+{assignments.map((a, i) => (
+<li key={i} className="student-assignment-row">
+<div>
+<b>{a.title}</b>
+<div className="student-assignment-due">Due: {a.due}</div>
+</div>
+<button
+className={
+"student-assignment-status " +
+(a.status === "Submitted"
+? "submitted"
+: a.status === "Pending"
+? "pending"
+: "review")
+}
+onClick={() => handleAssignmentClick(a.status)}
+>
+{a.status}
+</button>
+</li>
+))}
+</ul>
+</div>
+<div className="student-card student-actions">
+<div className="student-card-title">Quick Actions</div>
+<div className="student-actions-grid">
+<button
+className="student-action-btn primary"
+onClick={() => handleQuickAction("Start Review")}
+>
+Start New Review
+</button>
+<button
+className="student-action-btn"
+onClick={() => handleQuickAction("View Grades")}
+>
+View All Grades
+</button>
+<button
+className="student-action-btn"
+onClick={() => handleQuickAction("Update Profile")}
+>
+Update Profile
+</button>
+<button
+className="student-link-btn"
+onClick={() => handleQuickAction("View Resources")}
+>
+View Learning Resources
+</button>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+</div>
 );
-};
+}
 
 export default Student;
+
+
+
+
+
+
+
