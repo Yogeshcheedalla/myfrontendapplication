@@ -1,78 +1,20 @@
-/* Core layout styles used across pages */
-body {
-	font-family: Arial, sans-serif;
-	background: #f4f6f9;
-	margin: 0;
-	padding: 0;
+input,
+textarea,
+select {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #ccc !important;
 }
 
-.container {
-	max-width: 1200px;
-	width: calc(100% - 48px);
-	margin: 24px auto;
-	padding: 24px;
-	background: #fff;
-	border-radius: 12px;
-	box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+input::placeholder,
+textarea::placeholder {
+  color: #666 !important;
 }
 
-/* Utility helpers */
-.full-bleed {
-	width: 100%;
-	margin: 0;
-	padding: 0;
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid #6a7dd6 !important;
+  background-color: #ffffff !important;
+  color: #000 !important;
 }
-
-.title {
-	text-align: left;
-	color: #2c3e50;
-}
-
-.subtitle {
-	margin-top: 20px;
-	color: #34495e;
-}
-
-.form, .actions {
-	display: flex;
-	gap: 10px;
-	margin: 10px 0;
-	flex-wrap: wrap;
-}
-
-.input {
-	flex: 1;
-	padding: 8px;
-	border: 1px solid #ccc;
-	border-radius: 8px;
-}
-
-.btn {
-	padding: 8px 14px;
-	border: none;
-	border-radius: 8px;
-	background: #3498db;
-	color: white;
-	cursor: pointer;
-}
-
-.btn:hover { background: #2980b9; }
-
-.list { list-style: none; padding: 0; }
-.list-item { background: #f9f9f9; margin: 8px 0; padding: 12px; border-radius: 8px; }
-
-/* Landing specific small tweaks */
-.landing-bg { padding: 40px 0; }
-.landing-main { max-width: 1100px; margin: 0 auto; padding: 20px; }
-.landing-hero-img { max-width: 480px; width: 100%; display: block; margin: 24px auto 0; }
-
-@media (max-width: 720px) {
-	.container { width: calc(100% - 24px); margin: 12px; padding: 16px; }
-	.landing-hero-img { max-width: 320px; }
-}
-
-/* small form error style */
-.error { color: #c0392b; margin-top: 8px; }
-
-/* keep other component styles intact if they import their own CSS */
-

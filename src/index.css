@@ -18,25 +18,28 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
 
 body {
   margin: 0;
-  /* allow content to flow naturally so components can span full width */
   min-width: 320px;
   min-height: 100vh;
 }
 
-/* Ensure form text is readable regardless of global color-scheme settings */
-input, textarea, select, button {
+input,
+textarea,
+select,
+button {
   color: #213547;
 }
 
-input::placeholder, textarea::placeholder {
+input::placeholder,
+textarea::placeholder {
   color: #888888;
-  opacity: 1; /* keep placeholder visible */
+  opacity: 1;
 }
 
 h1 {
@@ -51,13 +54,16 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #007bff;
+  color: white;
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
@@ -68,9 +74,11 @@ button:focus-visible {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }

@@ -24,7 +24,7 @@ function Signup() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:5000/signup", {
+      const res = await fetch("http://localhost:5001/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -36,7 +36,7 @@ function Signup() {
       });
 
       const data = await res.json();
-      
+
       if (res.ok) {
         navigate("/login");
       } else {
@@ -75,22 +75,22 @@ function Signup() {
         </div>
 
         <label>Full Name</label>
-        <input type="text" placeholder="John Doe" value={name} required onChange={e => setName(e.target.value)} />
+        <input type="text" placeholder="Enter Name" value={name} required onChange={e => setName(e.target.value)} />
 
         <label>Email</label>
-        <input type="email" placeholder="john@example.com" value={email} required onChange={e => setEmail(e.target.value)} />
+        <input type="email" placeholder="Enter Email" value={email} required onChange={e => setEmail(e.target.value)} />
 
         <label>Password</label>
-        <input type="password" placeholder="********" value={pass} required onChange={e => setPass(e.target.value)} />
+        <input type="password" placeholder="Enter Password" value={pass} required onChange={e => setPass(e.target.value)} />
 
         <label>Confirm Password</label>
-        <input type="password" placeholder="********" value={confirm} required onChange={e => setConfirm(e.target.value)} />
+        <input type="password" placeholder="Confirm Password" value={confirm} required onChange={e => setConfirm(e.target.value)} />
 
         <button className="signup-btn" type="submit" disabled={loading}>
           {loading ? "Registering..." : "Register"}
         </button>
 
-        {error && <p className="error-message" style={{color: "#eb5757", marginTop: "10px", textAlign: "center"}}>{error}</p>}
+        {error && <p className="error-message" style={{ color: "#eb5757", marginTop: "10px", textAlign: "center" }}>{error}</p>}
 
         <div className="signup-footer">
           Already have an account?{" "}

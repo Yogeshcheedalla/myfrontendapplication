@@ -1,212 +1,366 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import "./teacher.css";
+import React, { useState, useEffect } from "react";
+import "./Teacher.css";
 
-const ASSIGNMENTS = [
-  {
-    title: "Essay on Climate Change",
-    course: "Environmental Science",
-    due: "2024-07-15",
-    status: "Active"
-  },
-  {
-    title: "Algebra Midterm Review",
-    course: "Mathematics II",
-    due: "2024-07-20",
-    status: "Pending"
-  },
-  {
-    title: "Research Paper Writing",
-    course: "Academic English",
-    due: "2024-07-25",
-    status: "Active"
-  },
-  {
-    title: "Capstone Project Proposal",
-    course: "Computer Science IV",
-    due: "2024-08-01",
-    status: "Pending"
-  },
-  {
-    title: "World History Presentation",
-    course: "History 101",
-    due: "2024-08-05",
-    status: "Completed"
-  }
-];
+const Teacher = () => {
+  const [assignments, setAssignments] = useState([]);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [userName, setUserName] = useState("Teacher");
 
-const RECENT_ACTIVITY = [
-  {text: "Sarah J. submitted review for 'Introduction to AI'", time: "2 hours ago"},
-  {text: "Assignment 'Data Structures' marked as completed", time: "1 day ago"},
-  {text: "New feedback on 'Research Paper Writing'", time: "3 days ago"},
-  {text: "Michael C. submitted 'Group Project Proposal'", time: "4 days ago"}
-];
+  const [newAssignment, setNewAssignment] = useState({
+    title: "",
+    description: "",
+    date: "",
+    hour: "12",
+    minute: "00",
+    period: "AM",
+    maxScore: 100,
+  });
 
-function Teacher() {
-  const navigate = useNavigate();
-  
-  const [assignments, setAssignments] = useState(ASSIGNMENTS);
-  const [search, setSearch] = useState("");
+  const token = localStorage.getItem("token");
 
-  const [showCreate, setShowCreate] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
-  const [newCourse, setNewCourse] = useState("");
-  const [newDue, setNewDue] = useState("");
+  const loadAssignments = async () => {
+    try {
+      const res = await fetch("http://localhost:5001/assignments", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-  const filteredAssignments = assignments.filter(a => 
-    a.title.toLowerCase().includes(search.toLowerCase()) ||
-    a.course.toLowerCase().includes(search.toLowerCase())
-  );
+      const data = await res.json();
 
-  function handleCreateAssignment(e) {
-    e.preventDefault();
-    setAssignments([...assignments, {
-      title: newTitle,
-      course: newCourse,
-      due: newDue,
-      status: "Pending"
-    }]);
-    setShowCreate(false);
-    setNewTitle(""); setNewCourse(""); setNewDue("");
-  }
+      if (!res.ok) {
+        console.log("Assignments load error:", data);
+        return;
+      }
 
-  function handleLogout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    navigate('/');
-  }
+      setAssignments(data);
+    } catch (err) {
+      console.log("Load assignments error:", err);
+    }
+  };
+
+  useEffect(() => {
+    const storedName = localStorage.getItem("userName");
+    if (storedName) setUserName(storedName);
+    loadAssignments();
+  }, []);
+
+  const handleCreateAssignment = async () => {
+    if (!newAssignment.title || !newAssignment.date) {
+      alert("Title & Date are required!");
+      return;
+    }
+
+    // Construct Date
+    let hour = parseInt(newAssignment.hour);
+    if (newAssignment.period === "PM" && hour !== 12) hour += 12;
+    if (newAssignment.period === "AM" && hour === 12) hour = 0;
+
+    const deadlineDate = new Date(newAssignment.date);
+    deadlineDate.setHours(hour);
+    deadlineDate.setMinutes(parseInt(newAssignment.minute));
+
+    try {
+      const res = await fetch("http://localhost:5001/assignments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: newAssignment.title,
+          description: newAssignment.description,
+          deadline: deadlineDate.toISOString(),
+          maxScore: newAssignment.maxScore,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        alert("Error creating assignment");
+        return;
+      }
+
+      loadAssignments();
+      setShowCreateForm(false);
+
+      setNewAssignment({
+        title: "",
+        description: "",
+        date: "",
+        hour: "12",
+        minute: "00",
+        period: "AM",
+        maxScore: 100,
+      });
+    } catch (err) {
+      console.log("Create error:", err);
+    }
+  };
+
+  const loadSubmissions = async (assignmentId) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5001/assignments/${assignmentId}/submissions`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.log("Submission load error:", data);
+        return;
+      }
+
+      // Update assignment with submissions
+      setAssignments((prev) =>
+        prev.map((a) =>
+          a._id === assignmentId ? { ...a, submissions: data } : a
+        )
+      );
+    } catch (err) {
+      console.log("Load submission error:", err);
+    }
+  };
+
+  const [gradeInputs, setGradeInputs] = useState({});
+
+  const handleGradeSubmission = async (submissionId, assignmentId) => {
+    const score = gradeInputs[submissionId];
+    if (score === undefined || score === "") {
+      alert("Please enter a score");
+      return;
+    }
+
+    try {
+      await fetch(`http://localhost:5001/submissions/${submissionId}/grade`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ grade: Number(score) }),
+      });
+
+      alert("Grade saved!");
+      loadSubmissions(assignmentId);
+    } catch (err) {
+      console.log("Grade error:", err);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    try {
+      return new Date(dateString).toLocaleString();
+    } catch {
+      return dateString;
+    }
+  };
 
   return (
-    <div className="teacher-dashboard-bg">
-
-      <header className="teacher-navbar">
-        <div className="teacher-logo"> <span style={{color:"#6a7dd6"}}>PeerReview</span></div>
-        <button className="teacher-logout-btn" onClick={handleLogout}>Logout</button>
+    <div className="teacher-dashboard">
+      <header className="dashboard-header">
+        <div className="header-left">
+          <div className="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="2" />
+              <path d="M7 8h10M7 12h6" stroke="currentColor" strokeWidth="2" />
+            </svg>
+          </div>
+          <div className="header-title">
+            <h1>Teacher Dashboard</h1>
+            <p>Welcome, {userName}</p>
+          </div>
+        </div>
+        <button
+          className="sign-out-btn"
+          onClick={() => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            window.location.href = "/login";
+          }}
+        >
+          Log Out
+        </button>
       </header>
 
-      <div className="teacher-layout">
-        <nav className="teacher-sidebar">
-          <div className="sidebar-item active">Teacher Dashboard</div>
-          <div className="sidebar-item">Assignments</div>
-          <div className="sidebar-subitem">All Assignments</div>
-          <div className="sidebar-subitem" onClick={()=>setShowCreate(true)}>+ Create Assignment</div>
-          <div className="sidebar-item">Feedback</div>
-          <div className="sidebar-item">Settings</div>
-        </nav>
+      <main className="dashboard-main">
+        <div className="assignments-section">
+          <div className="section-header">
+            <h2>My Assignments</h2>
+            <button className="create-assignment-btn" onClick={() => setShowCreateForm(true)}>
+              + Create Assignment
+            </button>
+          </div>
 
-        <div className="teacher-main">
+          <div className="assignments-list">
+            {assignments.map((assignment) => (
+              <div key={assignment._id} className="assignment-card">
+                <div className="assignment-header">
+                  <div className="assignment-info">
+                    <h3>{assignment.title}</h3>
+                    {assignment.description && <p className="assignment-description">{assignment.description}</p>}
+                    <p className="due-date">Due: {formatDate(assignment.deadline)}</p>
+                  </div>
+                  <div className="assignment-meta">
+                    <span className="max-score">Max Score: {assignment.maxScore}</span>
+                    <button
+                      className="grade-btn"
+                      onClick={() => {
+                        const isOpen = selectedAssignment === assignment._id;
+                        setSelectedAssignment(isOpen ? null : assignment._id);
+                        if (!isOpen) loadSubmissions(assignment._id);
+                      }}
+                    >
+                      {selectedAssignment === assignment._id ? "Hide Submissions" : "View Submissions"}
+                    </button>
+                  </div>
+                </div>
 
-          <section className="teacher-welcome">
-            <h1>Teacher Dashboard</h1>
-            <div className="teacher-welcome-row">
-              <div>
-                <b>Welcome, Teacher!</b>
-                <p className="teacher-welcome-desc">
-                  Here's an overview of your current assignments and activities on PeerReview.
-                </p>
-              </div>
-              <button className="teacher-create-btn" onClick={()=>setShowCreate(true)}>
-                + Create New Assignment
-              </button>
-            </div>
-            <div className="teacher-overview-row">
-              <div className="teacher-overview-card">
-                <div>Active Assignments</div>
-                <div className="teacher-ov-number">12</div>
-                <div className="teacher-ov-green">+20.1% from last month</div>
-              </div>
-              <div className="teacher-overview-card">
-                <div>Pending Reviews</div>
-                <div className="teacher-ov-number">5</div>
-                <div className="teacher-ov-red">-5.2% from last week</div>
-              </div>
-              <div className="teacher-overview-card">
-                <div>Students Enrolled</div>
-                <div className="teacher-ov-number">145</div>
-                <div className="teacher-ov-green">+1.5% from last semester</div>
-              </div>
-            </div>
-          </section>
-
-          <section className="teacher-activity">
-            <h3>Recent Activity</h3>
-            <ul className="teacher-activity-list">
-              {RECENT_ACTIVITY.map((r, idx) =>
-                <li key={idx} className="teacher-activity-item">
-                  <span className="teacher-activity-icon">📝</span>
-                  <span>{r.text}</span>
-                  <span className="teacher-activity-time">{r.time}</span>
-                </li>
-              )}
-            </ul>
-          </section>
-
-          <section className="teacher-assignments">
-            <h3>My Assignments</h3>
-            <input
-              type="search"
-              className="teacher-search"
-              placeholder="Search assignments..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-            <table className="teacher-table">
-              <thead>
-                <tr>
-                  <th>Assignment Title</th>
-                  <th>Course</th>
-                  <th>Due Date</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAssignments.map((a, idx) =>
-                  <tr key={idx}>
-                    <td>{a.title}</td>
-                    <td>{a.course}</td>
-                    <td>{a.due}</td>
-                    <td>
-                      <span className={`assignment-status ${a.status.toLowerCase()}`}>
-                        {a.status}
-                      </span>
-                    </td>
-                    <td>
-                      <button className="teacher-view-btn">
-                        View
-                      </button>
-                    </td>
-                  </tr>
+                {selectedAssignment === assignment._id && (
+                  <div className="submissions-section">
+                    <h4>Student Submissions</h4>
+                    {!assignment.submissions || assignment.submissions.length === 0 ? (
+                      <p className="no-submissions">No submissions yet</p>
+                    ) : (
+                      <div className="submissions-list">
+                        {assignment.submissions.map((submission) => (
+                          <div key={submission._id} className="submission-item">
+                            <div className="student-info">
+                              <span className="student-name">{submission.student?.name || "Unknown"}</span>
+                              <span className="submission-status">Submitted</span>
+                            </div>
+                            {submission.text && (
+                              <div className="submission-answer-box">
+                                <strong>Answer:</strong>
+                                <p>{submission.text}</p>
+                              </div>
+                            )}
+                            <div className="grading-section">
+                              {submission.grade != null ? (
+                                <span className="current-score">
+                                  Score: {submission.grade}/{assignment.maxScore}
+                                </span>
+                              ) : (
+                                <span className="ungraded">Ungraded</span>
+                              )}
+                              <div className="grade-input-group">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max={assignment.maxScore}
+                                  placeholder="Score"
+                                  className="score-input"
+                                  value={gradeInputs[submission._id] || ""}
+                                  onChange={(e) =>
+                                    setGradeInputs({
+                                      ...gradeInputs,
+                                      [submission._id]: e.target.value,
+                                    })
+                                  }
+                                />
+                                <button
+                                  className="submit-grade-btn"
+                                  onClick={() => handleGradeSubmission(submission._id, assignment._id)}
+                                >
+                                  Submit
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )}
-              </tbody>
-            </table>
-            <div className="teacher-table-footer">
-              <button className="teacher-pagination-btn">« Previous</button>
-              <button className="teacher-pagination-btn">Next »</button>
-            </div>
-          </section>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </main>
 
-      {showCreate && (
-        <div className="teacher-modal-bg">
-          <form className="teacher-modal" onSubmit={handleCreateAssignment}>
-            <h2>Create Assignment</h2>
-            <label>Title</label>
-            <input value={newTitle} onChange={e=>setNewTitle(e.target.value)} required />
-            <label>Course</label>
-            <input value={newCourse} onChange={e=>setNewCourse(e.target.value)} required />
-            <label>Due Date</label>
-            <input type="date" value={newDue} onChange={e=>setNewDue(e.target.value)} required />
-            <div className="teacher-modal-actions">
-              <button type="submit">Create</button>
-              <button type="button" onClick={()=>setShowCreate(false)}>Cancel</button>
+      {showCreateForm && (
+        <div className="modal-overlay">
+          <div className="create-assignment-modal">
+            <div className="modal-header">
+              <h3>Create New Assignment</h3>
+              <button className="close-btn" onClick={() => setShowCreateForm(false)}>✕</button>
             </div>
-          </form>
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Assignment Title</label>
+                <input
+                  type="text"
+                  value={newAssignment.title}
+                  onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  rows="3"
+                  value={newAssignment.description}
+                  onChange={(e) => setNewAssignment({ ...newAssignment, description: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label>Due Date</label>
+                <div className="time-inputs">
+                  <input
+                    type="date"
+                    value={newAssignment.date}
+                    onChange={(e) => setNewAssignment({ ...newAssignment, date: e.target.value })}
+                    style={{ flex: 2 }}
+                  />
+                  <input
+                    type="number"
+                    min="1"
+                    max="12"
+                    placeholder="HH"
+                    value={newAssignment.hour}
+                    onChange={(e) => setNewAssignment({ ...newAssignment, hour: e.target.value })}
+                    style={{ flex: 1 }}
+                  />
+                  <span className="time-separator">:</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    placeholder="MM"
+                    value={newAssignment.minute}
+                    onChange={(e) => setNewAssignment({ ...newAssignment, minute: e.target.value })}
+                    style={{ flex: 1 }}
+                  />
+                  <select
+                    value={newAssignment.period}
+                    onChange={(e) => setNewAssignment({ ...newAssignment, period: e.target.value })}
+                    style={{ flex: 1 }}
+                  >
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                  </select>
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Max Score</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={newAssignment.maxScore}
+                  onChange={(e) => setNewAssignment({ ...newAssignment, maxScore: Number(e.target.value) })}
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="cancel-btn" onClick={() => setShowCreateForm(false)}>Cancel</button>
+              <button className="create-btn" onClick={handleCreateAssignment}>Create Assignment</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
-}
+};
 
 export default Teacher;

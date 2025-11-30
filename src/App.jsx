@@ -5,7 +5,10 @@ import Login from "./Login";
 import Signup from "./Signup";
 import Teacher from "./Teacher";
 import Student from "./Student";
+import Admin from "./Admin";
 import "./App.css";
+import PeerReview from './PeerReview'
+
 
 function App() {
   return (
@@ -16,9 +19,11 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/teacher" element={<Teacher />} />
         <Route path="/student" element={<Student />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/peer-review/:assignmentId" element={<PeerReview />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </Router>     
+    </Router>
   );
 }
 
