@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import "./Teacher.css";
+import "./teacher.css";
+
 
 const Teacher = () => {
   const [assignments, setAssignments] = useState([]);
