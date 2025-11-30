@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { projects } from "./projects";
-import "./Student.css";
+import "./student.css";
+
 
 const Admin = () => {
     const navigate = useNavigate();
