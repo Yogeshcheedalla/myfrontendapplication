@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Student.css";
+import "./student.css";
+
 import { projects } from "./projects";
 
 const Student = () => {
